@@ -307,7 +307,7 @@ public class ParticipantDetail extends AttributeModifiedSupport {
 		result.setEthnicities(new HashSet<>(participant.getEthnicities()));
 		result.setGender(participant.getGender());
 		result.setEmpi(excludePhi ? "###" : participant.getEmpi());
-		result.setPmis(PmiDetail.from(participant.getPmis(), excludePhi)); 
+		result.setPmis(PmiDetail.from(participant.getPmisOrderedById(), excludePhi));
 		result.setRaces(new HashSet<>(participant.getRaces()));
 		result.setSexGenotype(participant.getSexGenotype());
 		result.setUid(excludePhi ? "###" : participant.getUid());

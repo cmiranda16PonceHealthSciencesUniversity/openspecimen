@@ -161,6 +161,10 @@ angular.module('os.biospecimen.participant.collect-specimens',
           visit.clinicalDiagnoses = latestVisit.clinicalDiagnoses;
         }
 
+        if (!visit.site) {
+          visit.site = latestVisit ? latestVisit.site : cpr.participant.pmis.length > 0 ? cpr.participant.pmis[0].siteName : null;
+        }
+
         $scope.visit = visit;
         $scope.autoPosAllocate = !!$scope.cp.containerSelectionStrategy;
         

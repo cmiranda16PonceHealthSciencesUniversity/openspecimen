@@ -7,8 +7,10 @@ import static com.krishagni.catissueplus.core.common.service.PvValidator.isValid
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.krishagni.catissueplus.core.administrative.domain.Site;
@@ -16,6 +18,7 @@ import com.krishagni.catissueplus.core.administrative.domain.User;
 import com.krishagni.catissueplus.core.administrative.domain.factory.SiteErrorCode;
 import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocolEvent;
 import com.krishagni.catissueplus.core.biospecimen.domain.CollectionProtocolRegistration;
+import com.krishagni.catissueplus.core.biospecimen.domain.ParticipantMedicalIdentifier;
 import com.krishagni.catissueplus.core.biospecimen.domain.Visit;
 import com.krishagni.catissueplus.core.biospecimen.domain.factory.CpeErrorCode;
 import com.krishagni.catissueplus.core.biospecimen.domain.factory.CprErrorCode;
@@ -284,20 +287,35 @@ public class VisitFactoryImpl implements VisitFactory {
 	}
 
 	private void setSite(VisitDetail visitDetail, Visit visit, OpenSpecimenException ose) {
+		Site site = null;
 		String visitSite = visitDetail.getSite();
 		if (StringUtils.isBlank(visitSite)) {
-			if (visit.isCompleted() && visit.getCpEvent() != null && visit.getCpEvent().getDefaultSite() != null) {
-				visit.setSite(visit.getCpEvent().getDefaultSite());
+			if (visit.isMissed()) {
+				return;
+			}
+
+			if (visit.getCpEvent() != null && visit.getCpEvent().getDefaultSite() != null) {
+				site = visit.getCpEvent().getDefaultSite();
+			} else {
+				CollectionProtocolRegistration cpr = visit.getRegistration();
+				if (cpr.getLatestVisit() != null) {
+					site = cpr.getLatestVisit().getSite();
+				} else {
+					List<ParticipantMedicalIdentifier> pmis = cpr.getParticipant().getPmisOrderedById();
+					if (CollectionUtils.isNotEmpty(pmis)) {
+						site = pmis.get(0).getSite();
+					}
+				}
 			}
 		} else {
-			Site site = daoFactory.getSiteDao().getSiteByName(visitSite);
+			site = daoFactory.getSiteDao().getSiteByName(visitSite);
 			if (site == null) {
 				ose.addError(SiteErrorCode.NOT_FOUND);
 				return;
 			}
-
-			visit.setSite(site);
 		}
+
+		visit.setSite(site);
 	}
 	
 	private void setSite(VisitDetail detail, Visit existing, Visit visit, OpenSpecimenException ose) {

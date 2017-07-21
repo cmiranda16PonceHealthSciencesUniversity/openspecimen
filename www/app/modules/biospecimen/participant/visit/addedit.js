@@ -18,10 +18,16 @@ angular.module('os.biospecimen.visit.addedit', [])
       }
 
       if (!currVisit.id) {
+        var site = currVisit.site;
+        if (!site) {
+          site = latestVisit ? latestVisit.site : cpr.participant.pmis.length > 0 ? cpr.participant.pmis[0].siteName : null;
+        }
+
         angular.extend(currVisit, {
           visitDate: currVisit.anticipatedVisitDate || new Date(),
           status: 'Complete',
-          clinicalDiagnoses: latestVisit ? latestVisit.clinicalDiagnoses : currVisit.clinicalDiagnoses
+          clinicalDiagnoses: latestVisit ? latestVisit.clinicalDiagnoses : currVisit.clinicalDiagnoses,
+          site: site
         });
         delete currVisit.anticipatedVisitDate;
       }
